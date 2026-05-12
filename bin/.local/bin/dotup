@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ -z "${DOTFILES:-}" ]]; then
+  if [[ -d "$HOME/.dotfiles" ]]; then
+    DOTFILES="$HOME/.dotfiles"
+  else
+    echo "Error: DOTFILES environment variable is not set." >&2
+    exit 1
+  fi
+fi
+
+DOTFILES="$(cd -- "$DOTFILES" && pwd -P)"
+
+(
+  cd -- "$DOTFILES"
+
+  if git pull "$@"; then
+    exit 0
+  else
+    pull_status=$?
+  fi
+
+  if git diff --name-only --diff-filter=U | grep -q .; then
+    exec git mergetool
+  fi
+
+  exit "$pull_status"
+)

@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ -z "${DOTFILES:-}" ]]; then
+  if [[ -d "$HOME/.dotfiles" ]]; then
+    DOTFILES="$HOME/.dotfiles"
+  else
+    echo "Error: DOTFILES environment variable is not set." >&2
+    exit 1
+  fi
+fi
+
+DOTFILES="$(cd -- "$DOTFILES" && pwd -P)"
+
+commit_message="${*:-WIP}"
+
+(
+  cd -- "$DOTFILES"
+
+  if [[ -n "$(git status --porcelain)" ]]; then
+    git add -A
+    git commit -m "$commit_message"
+  fi
+
+  dotup
+  git push
+)

@@ -1,0 +1,6 @@
+alias vim="nvim"
+alias la="ls -A --group-directories-first --color=auto"
+alias ll="ls -lh --group-directories-first --color=auto"
+alias lla="ls -lha --group-directories-first --color=auto"
+alias shell="nvim $ZDOTDIR/.zshrc"
+alias profile="nvim $HOME/.zprofile"

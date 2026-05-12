@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ -z "${DOTFILES:-}" ]]; then
+  if [[ -d "$HOME/.dotfiles" ]]; then
+    DOTFILES="$HOME/.dotfiles"
+  else
+    echo "Error: DOTFILES environment variable is not set." >&2
+    exit 1
+  fi
+fi
+
+DOTFILES="$(cd -- "$DOTFILES" && pwd -P)"
+
+exec stow --dir "$DOTFILES" -t "$HOME" "$@" \
+  2> >(grep -Fv 'BUG in find_stowed_path? Absolute/relative mismatch between Stow dir' >&2)
+export PATH="$HOME/.local/bin:$PATH"

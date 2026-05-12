@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ -z "${DOTFILES:-}" ]]; then
+  if [[ -d "$HOME/.dotfiles" ]]; then
+    DOTFILES="$HOME/.dotfiles"
+  else
+    echo "Error: DOTFILES environment variable is not set." >&2
+    exit 1
+  fi
+fi
+
+DOTFILES="$(cd -- "$DOTFILES" && pwd -P)"
+
+(
+  cd -- "$DOTFILES"
+
+  git fetch --quiet
+
+  if upstream_ref=$(git rev-parse --abbrev-ref --symbolic-full-name '@{upstream}' 2>/dev/null); then
+    behind_count=$(git rev-list --count HEAD.."$upstream_ref")
+
+    if [[ "$behind_count" -gt 0 ]]; then
+      echo "Remote changes available: yes ($behind_count commit(s))"
+    else
+      echo "Remote changes available: no"
+    fi
+  else
+    echo "Remote changes available: unknown (no upstream configured)"
+  fi
+
+  local_changes=$(git status --short)
+  if [[ -n "$local_changes" ]]; then
+    echo "Local changes:"
+    printf '%s\n' "$local_changes"
+  else
+    echo "Local changes: none"
+  fi
+)
