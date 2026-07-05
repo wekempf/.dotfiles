@@ -17,13 +17,9 @@ if [[ -n "${DOTFILES:-}" && -d "$DOTFILES" ]]; then
   export DOTFILES
 fi
 
-setopt autocd
-setopt interactive_comments
-
-export HISTSIZE=268435456
-export SAVEHIST="$HISTSIZE"
-export HISTFILE="$ZDOTDIR/.zsh_history"
-setopt INC_APPEND_HISTORY
+if [[ -f "$ZDOTDIR/options.zsh" ]]; then
+    source "$ZDOTDIR/options.zsh"
+fi
 
 bindkey '^R' history-incremental-search-backward
 
@@ -82,4 +78,7 @@ if [[ -f "$ZDOTDIR/functions.zsh" ]]; then
 fi
 if [[ -f "$ZDOTDIR/prompt.zsh" ]]; then
     source "$ZDOTDIR/prompt.zsh"
+fi
+if [[ -d "$HOME/.local/bin" ]]; then
+    __add_path "$HOME/.local/bin"
 fi

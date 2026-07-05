@@ -897,17 +897,30 @@ do
   -- NOTE: You can also specify a branch or a specific commit
   vim.pack.add { { src = gh 'nvim-treesitter/nvim-treesitter', version = 'main' } }
 
-  -- Ensure basic parsers are installed
+  -- Neovim's AppImage already ships a small set of parsers. Prefer those first
+  -- and only auto-install extra parsers if the installed tree-sitter CLI is new
+  -- enough for nvim-treesitter's current installer.
+  local function can_auto_install_parsers()
+    if vim.fn.executable 'tree-sitter' ~= 1 then return false end
+
+    vim.fn.system { 'tree-sitter', 'build', '--help' }
+    return vim.v.shell_error == 0
+  end
+
+  local auto_install_parsers = can_auto_install_parsers()
   local parsers = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' }
-  require('nvim-treesitter').install(parsers)
+  if auto_install_parsers then require('nvim-treesitter').install(parsers) end
 
   ---@param buf integer
   ---@param language string
+  ---@return boolean
   local function treesitter_try_attach(buf, language)
     -- Check if a parser exists and load it
-    if not vim.treesitter.language.add(language) then return end
+    local ok, added = pcall(vim.treesitter.language.add, language)
+    if not ok or not added then return false end
     -- Enable syntax highlighting and other treesitter features
-    vim.treesitter.start(buf, language)
+    local start_ok = pcall(vim.treesitter.start, buf, language)
+    if not start_ok then return false end
 
     -- Enable treesitter based folds
     -- For more info on folds see `:help folds`
@@ -916,10 +929,11 @@ do
 
     -- Check if treesitter indentation is available for this language, and if so enable it
     -- in case there is no indent query, the indentexpr will fallback to the vim's built in one
-    local has_indent_query = vim.treesitter.query.get(language, 'indents') ~= nil
+    local query_ok, indent_query = pcall(vim.treesitter.query.get, language, 'indents')
 
     -- Enable treesitter based indentation
-    if has_indent_query then vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()" end
+    if query_ok and indent_query then vim.bo[buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()" end
+    return true
   end
 
   local available_parsers = require('nvim-treesitter').get_available()
@@ -929,6 +943,12 @@ do
 
       local language = vim.treesitter.language.get_lang(filetype)
       if not language then return end
+
+      -- Built-in parsers, including the ones bundled in the AppImage, are not
+      -- listed by nvim-treesitter's installer state.
+      if treesitter_try_attach(buf, language) then return end
+
+      if not auto_install_parsers then return end
 
       local installed_parsers = require('nvim-treesitter').get_installed 'parsers'
 

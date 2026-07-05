@@ -19,7 +19,6 @@ dir_status() {
     fi
     echo $sstatus
 }
-setopt prompt_subst
 zstyle ':vcs_info:*' check-for-changes true
 zstyle ':vcs_info:git*' formats "%F{blue}⎇ %b %u%c"
 zstyle ':vcs_info:git*' actionformats "%F{yellow}⎇ %b|%a %u%c"
