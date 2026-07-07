@@ -1,0 +1,258 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Determine DOTFILES path
+if [[ -n "${DOTFILES:-}" && -d "$DOTFILES" ]]; then
+  DOTFILES="$(cd -- "$DOTFILES" && pwd -P)"
+else
+  script_path="$(readlink -f -- "${BASH_SOURCE[0]}")"
+  script_dir="$(cd -- "$(dirname -- "$script_path")" && pwd -P)"
+  DOTFILES="$(cd -- "$script_dir/.." && pwd -P)"
+fi
+
+TOOLS_CONFIG="$DOTFILES/zsh/.config/zsh/tools.yaml"
+
+# Available tools and their package names per OS
+declare -A TOOLS_APT=(
+  [zoxide]="zoxide"
+  [fzf]="fzf"
+  [eza]="eza"
+  [neovim]="neovim"
+  [bat]="bat"
+  [ripgrep]="ripgrep"
+  [fd]="fd-find"
+  [delta]="git-delta"
+)
+
+show_help() {
+  cat <<EOF
+Usage: $0 [OPTIONS] [TOOL...]
+
+Install zsh and optional tools for enhanced shell experience.
+
+OPTIONS:
+  -h, --help          Show this help message
+  -l, --list          List available tools
+  -a, --all           Install all available tools
+  -i, --interactive   Interactive mode to select tools
+
+TOOLS:
+  Specify one or more tools to install. If no tools specified,
+  only zsh will be installed.
+
+  Available tools:
+$(list_tools | sed 's/^/    /')
+
+EXAMPLES:
+  $0                          # Install only zsh
+  $0 fzf eza neovim           # Install zsh + specific tools
+  $0 --all                    # Install zsh + all tools
+  $0 --interactive            # Choose tools interactively
+
+EOF
+}
+
+list_tools() {
+  for tool in "${!TOOLS_APT[@]}"; do
+    echo "$tool"
+  done | sort
+}
+
+list_tools_detailed() {
+  echo "Available tools:"
+  echo ""
+  for tool in $(list_tools); do
+    local status=" "
+    local desc=""
+    local color=""
+    local reset="\033[0m"
+    
+    # Check if tool is installed
+    if command -v "$tool" >/dev/null 2>&1; then
+      status="✓"
+      color="\033[32m"  # Green
+    elif [[ "$tool" == "neovim" ]] && command -v nvim >/dev/null 2>&1; then
+      status="✓"
+      color="\033[32m"  # Green
+    elif [[ "$tool" == "fd" ]] && command -v fdfind >/dev/null 2>&1; then
+      status="✓"
+      color="\033[32m"  # Green
+    elif [[ "$tool" == "ripgrep" ]] && command -v rg >/dev/null 2>&1; then
+      status="✓"
+      color="\033[32m"  # Green
+    fi
+    
+    case "$tool" in
+      zoxide) desc="Smarter cd command that learns your habits" ;;
+      fzf) desc="Fuzzy finder for command-line" ;;
+      eza) desc="Modern replacement for ls with icons and colors" ;;
+      neovim) desc="Hyperextensible Vim-based text editor" ;;
+      bat) desc="Cat clone with syntax highlighting" ;;
+      ripgrep) desc="Fast grep alternative" ;;
+      fd) desc="Fast find alternative" ;;
+      delta) desc="Syntax-highlighting pager for git" ;;
+    esac
+    
+    if [[ -n "$color" ]]; then
+      printf "  ${color}%s${reset} %-12s - %s\n" "$status" "$tool" "$desc"
+    else
+      printf "  %s %-12s - %s\n" "$status" "$tool" "$desc"
+    fi
+  done
+}
+
+interactive_select() {
+  local tools_to_install=()
+  
+  echo "Select tools to install (y/n for each):"
+  echo ""
+  
+  for tool in $(list_tools); do
+    local desc=""
+    case "$tool" in
+      zoxide) desc="Smarter cd command that learns your habits" ;;
+      fzf) desc="Fuzzy finder for command-line" ;;
+      eza) desc="Modern replacement for ls with icons and colors" ;;
+      neovim) desc="Hyperextensible Vim-based text editor" ;;
+      bat) desc="Cat clone with syntax highlighting" ;;
+      ripgrep) desc="Fast grep alternative" ;;
+      fd) desc="Fast find alternative" ;;
+      delta) desc="Syntax-highlighting pager for git" ;;
+    esac
+    
+    if command -v "$tool" >/dev/null 2>&1 || [[ "$tool" == "neovim" ]] && command -v nvim >/dev/null 2>&1; then
+      echo "  [$tool] already installed - $desc"
+      continue
+    fi
+    
+    read -p "  Install $tool? ($desc) [y/N]: " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+      tools_to_install+=("$tool")
+    fi
+  done
+  
+  echo "${tools_to_install[@]}"
+}
+
+install_package_apt() {
+  local package="$1"
+  echo "Installing $package via apt..."
+  "$DOTFILES/__setup/apt-update"
+  sudo apt-get install -y "$package"
+}
+
+# Parse arguments
+INSTALL_ALL=false
+INTERACTIVE=false
+TOOLS_TO_INSTALL=()
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -h|--help)
+      show_help
+      exit 0
+      ;;
+    -l|--list)
+      list_tools_detailed
+      exit 0
+      ;;
+    -a|--all)
+      INSTALL_ALL=true
+      shift
+      ;;
+    -i|--interactive)
+      INTERACTIVE=true
+      shift
+      ;;
+    *)
+      TOOLS_TO_INSTALL+=("$1")
+      shift
+      ;;
+  esac
+done
+
+# Install zsh if not already installed
+if ! command -v zsh >/dev/null 2>&1; then
+  if [[ ! -r /etc/os-release ]]; then
+    echo "Error: unable to detect operating system." >&2
+    exit 1
+  fi
+  
+  . /etc/os-release
+  
+  case "$ID${VERSION_ID:+:$VERSION_ID}" in
+    ubuntu:*|ubuntu)
+      echo "zsh: installing via apt-get"
+      "$DOTFILES/__setup/apt-update"
+      sudo apt-get install -y zsh
+      ;;
+    *)
+      echo "Error: unsupported operating system: ${PRETTY_NAME:-$ID}" >&2
+      exit 1
+      ;;
+  esac
+else
+  echo "zsh: already installed"
+fi
+
+# Handle tool installation
+if [[ "$INTERACTIVE" == true ]]; then
+  mapfile -t TOOLS_TO_INSTALL < <(interactive_select)
+elif [[ "$INSTALL_ALL" == true ]]; then
+  TOOLS_TO_INSTALL=("${!TOOLS_APT[@]}")
+fi
+
+if [[ ${#TOOLS_TO_INSTALL[@]} -eq 0 ]]; then
+  echo "No additional tools to install."
+  exit 0
+fi
+
+# Detect OS for package installation
+if [[ ! -r /etc/os-release ]]; then
+  echo "Error: unable to detect operating system." >&2
+  exit 1
+fi
+
+. /etc/os-release
+
+# Install requested tools
+for tool in "${TOOLS_TO_INSTALL[@]}"; do
+  # Skip if already installed
+  if command -v "$tool" >/dev/null 2>&1; then
+    echo "$tool: already installed"
+    continue
+  fi
+  
+  # Special case for neovim (command is nvim)
+  if [[ "$tool" == "neovim" ]] && command -v nvim >/dev/null 2>&1; then
+    echo "$tool: already installed"
+    continue
+  fi
+  
+  # Get package name for this OS
+  package=""
+  case "$ID${VERSION_ID:+:$VERSION_ID}" in
+    ubuntu:*|ubuntu)
+      package="${TOOLS_APT[$tool]:-}"
+      ;;
+  esac
+  
+  if [[ -z "$package" ]]; then
+    echo "$tool: no package available for ${PRETTY_NAME:-$ID}" >&2
+    continue
+  fi
+  
+  case "$ID${VERSION_ID:+:$VERSION_ID}" in
+    ubuntu:*|ubuntu)
+      install_package_apt "$package"
+      ;;
+    *)
+      echo "Error: unsupported operating system: ${PRETTY_NAME:-$ID}" >&2
+      exit 1
+      ;;
+  esac
+done
+
+echo "Installation complete!"

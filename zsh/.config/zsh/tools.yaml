@@ -1,0 +1,42 @@
+# Optional tools for zsh configuration
+# Format: tool_name: {package, description, config_file}
+
+zoxide:
+  package: zoxide
+  description: "Smarter cd command that learns your habits"
+  config_file: tools/zoxide.zsh
+
+fzf:
+  package: fzf
+  description: "Fuzzy finder for command-line"
+  config_file: tools/fzf.zsh
+
+eza:
+  package: eza
+  description: "Modern replacement for ls with icons and colors"
+  config_file: tools/eza.zsh
+
+neovim:
+  package: neovim
+  description: "Hyperextensible Vim-based text editor"
+  config_file: tools/neovim.zsh
+
+bat:
+  package: bat
+  description: "Cat clone with syntax highlighting"
+  config_file: tools/bat.zsh
+
+ripgrep:
+  package: ripgrep
+  description: "Fast grep alternative"
+  config_file: tools/ripgrep.zsh
+
+fd:
+  package: fd-find
+  description: "Fast find alternative"
+  config_file: tools/fd.zsh
+
+delta:
+  package: git-delta
+  description: "Syntax-highlighting pager for git"
+  config_file: tools/delta.zsh

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ -n "${DOTFILES:-}" && -d "$DOTFILES" ]]; then
+  DOTFILES="$(cd -- "$DOTFILES" && pwd -P)"
+else
+  script_path="$(readlink -f -- "${BASH_SOURCE[0]}")"
+  script_dir="$(cd -- "$(dirname -- "$script_path")" && pwd -P)"
+  DOTFILES="$script_dir"
+fi
+
+"$DOTFILES/__setup/minimal"
+"$DOTFILES/bin/.local/bin/dotls"

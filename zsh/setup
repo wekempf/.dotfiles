@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ -n "${DOTFILES:-}" && -d "$DOTFILES" ]]; then
+  DOTFILES="$(cd -- "$DOTFILES" && pwd -P)"
+else
+  script_path="$(readlink -f -- "${BASH_SOURCE[0]}")"
+  script_dir="$(cd -- "$(dirname -- "$script_path")" && pwd -P)"
+  DOTFILES="$(cd -- "$script_dir/.." && pwd -P)"
+fi
+
+# Install zsh if not already installed
+if ! command -v zsh >/dev/null 2>&1; then
+  if [[ ! -r /etc/os-release ]]; then
+    echo "Error: unable to detect operating system." >&2
+    exit 1
+  fi
+
+  . /etc/os-release
+
+  case "$ID${VERSION_ID:+:$VERSION_ID}" in
+    ubuntu:*|ubuntu)
+      echo "zsh: installing via apt-get"
+      "$DOTFILES/__setup/apt-update"
+      sudo apt-get install -y zsh
+      ;;
+    *)
+      echo "Error: unsupported operating system: ${PRETTY_NAME:-$ID}" >&2
+      exit 1
+      ;;
+  esac
+else
+  echo "zsh: already installed"
+fi
+
+# Auto-stow configs for installed optional tools
+dotuse_cmd="$DOTFILES/bin/.local/bin/dotuse"
+if [[ -x "$dotuse_cmd" ]]; then
+  echo "Setting up configurations for installed tools..."
+  
+  # Map of tool commands to package names
+  declare -A TOOL_PACKAGES=(
+    [nvim]="nvim"
+    [bat]="bat"
+    [batcat]="bat"
+    [rg]="ripgrep"
+  )
+  
+  for cmd in "${!TOOL_PACKAGES[@]}"; do
+    package="${TOOL_PACKAGES[$cmd]}"
+    if command -v "$cmd" >/dev/null 2>&1 && [[ -d "$DOTFILES/$package" ]]; then
+      echo "  → $package"
+      "$dotuse_cmd" "$package" || true
+    fi
+  done
+fi

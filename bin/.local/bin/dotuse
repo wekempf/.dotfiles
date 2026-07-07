@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ -z "${DOTFILES:-}" ]]; then
+  if [[ -d "$HOME/.dotfiles" ]]; then
+    DOTFILES="$HOME/.dotfiles"
+  else
+    echo "Error: DOTFILES environment variable is not set." >&2
+    exit 1
+  fi
+fi
+
+DOTFILES="$(cd -- "$DOTFILES" && pwd -P)"
+dotstow_cmd="$DOTFILES/bin/.local/bin/dotstow"
+
+if [[ $# -lt 1 ]]; then
+  echo "Usage: dotuse <package> [package ...]" >&2
+  exit 1
+fi
+
+for package in "$@"; do
+  setup_script="$DOTFILES/$package/setup"
+
+  if [[ -x "$setup_script" ]]; then
+    if ! "$setup_script"; then
+      echo "Error: setup failed for package '$package'." >&2
+      exit 1
+    fi
+  fi
+
+  "$dotstow_cmd" -Rv "$package"
+done

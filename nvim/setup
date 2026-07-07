@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+if [[ -n "${DOTFILES:-}" && -d "$DOTFILES" ]]; then
+  DOTFILES="$(cd -- "$DOTFILES" && pwd -P)"
+else
+  script_path="$(readlink -f -- "${BASH_SOURCE[0]}")"
+  script_dir="$(cd -- "$(dirname -- "$script_path")" && pwd -P)"
+  DOTFILES="$(cd -- "$script_dir/.." && pwd -P)"
+fi
+
+if command -v nvim >/dev/null 2>&1; then
+  echo "nvim: already installed"
+  exit 0
+fi
+
+if [[ ! -r /etc/os-release ]]; then
+  echo "Error: unable to detect operating system." >&2
+  exit 1
+fi
+
+. /etc/os-release
+
+case "$ID${VERSION_ID:+:$VERSION_ID}" in
+  ubuntu:*|ubuntu)
+    if ! command -v snap >/dev/null 2>&1; then
+      echo "Error: snap is required to install nvim on ${PRETTY_NAME:-$ID}." >&2
+      exit 1
+    fi
+
+    echo "nvim: installing via snap"
+    sudo snap install nvim --classic
+    ;;
+  *)
+    echo "Error: unsupported operating system: ${PRETTY_NAME:-$ID}" >&2
+    exit 1
+    ;;
+esac

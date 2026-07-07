@@ -13,5 +13,7 @@ fi
 
 DOTFILES="$(cd -- "$DOTFILES" && pwd -P)"
 
-exec stow --dir "$DOTFILES" -t "$HOME" "$@" \
-  2> >(grep -Fv 'BUG in find_stowed_path? Absolute/relative mismatch between Stow dir' >&2)
+find "$DOTFILES" -mindepth 1 -maxdepth 1 -type d \
+  ! -name '.*' \
+  ! -name '__*' \
+  -printf '%f\n' | sort

@@ -1,0 +1,9 @@
+# Machine-specific configuration
+local_env.zsh
+
+# Zsh runtime files
+.zcompdump*
+.zsh_history
+
+# OS-specific files
+.DS_Store

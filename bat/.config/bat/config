@@ -1,0 +1,22 @@
+# bat configuration
+# See 'bat --help' for more options
+
+# Set the theme (run 'bat --list-themes' to see available themes)
+--theme="ansi"
+
+# Show line numbers, Git modifications and file header (but no grid)
+--style="numbers,changes,header"
+
+# Use italic text on the terminal (not supported on all terminals)
+--italic-text=always
+
+# Add mouse scrolling support in less (does not work with older versions of "less")
+--paging=auto
+
+# Use C++ syntax for .ino files
+--map-syntax "*.ino:C++"
+
+# Use shell syntax for dotfiles without extension
+--map-syntax ".ignore:Git Ignore"
+--map-syntax ".gitignore:Git Ignore"
+--map-syntax ".envrc:Bash"

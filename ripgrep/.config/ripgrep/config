@@ -1,0 +1,33 @@
+# ripgrep configuration
+# See 'rg --help' for more options
+
+# Follow symbolic links
+--follow
+
+# Search hidden files and directories
+--hidden
+
+# Ignore .git directories
+--glob=!.git/*
+
+# Ignore node_modules
+--glob=!node_modules/*
+
+# Ignore common build/cache directories
+--glob=!target/*
+--glob=!build/*
+--glob=!dist/*
+--glob=!.cache/*
+
+# Use smart case (case-insensitive unless uppercase is used)
+--smart-case
+
+# Show column numbers
+--column
+
+# Show colors
+--colors=path:fg:green
+--colors=path:style:bold
+--colors=line:fg:yellow
+--colors=match:fg:red
+--colors=match:style:bold

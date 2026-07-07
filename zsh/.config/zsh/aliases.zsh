@@ -1,6 +1,9 @@
-alias vim="nvim"
-alias la="ls -A --group-directories-first --color=auto"
-alias ll="ls -lh --group-directories-first --color=auto"
-alias lla="ls -lha --group-directories-first --color=auto"
-alias shell="nvim $ZDOTDIR/.zshrc"
-alias profile="nvim $HOME/.zprofile"
+# General aliases (tool-specific aliases are in tools/*.zsh)
+alias shell="${EDITOR:-vi} $ZDOTDIR/.zshrc"
+alias profile="${EDITOR:-vi} $HOME/.zprofile"
+alias sc='source $HOME/.config/zsh/.zshrc'
+
+# PowerShell-like aliases
+alias md='mkdir'
+alias cls='clear'
+alias tree='eza --tree --level=2 --icons'

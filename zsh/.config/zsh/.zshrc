@@ -17,17 +17,47 @@ if [[ -n "${DOTFILES:-}" && -d "$DOTFILES" ]]; then
   export DOTFILES
 fi
 
+path=("$HOME/.local/bin" $path)
+export PATH
+
 if [[ -f "$ZDOTDIR/options.zsh" ]]; then
     source "$ZDOTDIR/options.zsh"
 fi
+setopt autocd
+setopt interactive_comments
+
+export HISTSIZE=268435456
+export SAVEHIST="$HISTSIZE"
+export HISTFILE="${XDG_STATE_HOME:-$HOME/.local/state}/zsh/history"
+setopt INC_APPEND_HISTORY
 
 bindkey '^R' history-incremental-search-backward
+
+# Create state directory for zsh runtime files
+mkdir -p "${XDG_STATE_HOME:-$HOME/.local/state}/zsh"
 
 autoload -U compinit
 zstyle ':completion:*' menu select
 zmodload zsh/complist
-compinit
+compinit -d "${XDG_STATE_HOME:-$HOME/.local/state}/zsh/zcompdump"
 _comp_options+=(globdots)
+
+# Load tool-specific configurations
+if [[ -d "$ZDOTDIR/tools" ]]; then
+  # Load helpers first (files starting with _)
+  for tool_config in "$ZDOTDIR/tools"/_*.zsh; do
+    if [[ -f "$tool_config" ]]; then
+      source "$tool_config"
+    fi
+  done
+  
+  # Then load other tool configs
+  for tool_config in "$ZDOTDIR/tools"/*.zsh; do
+    if [[ -f "$tool_config" ]] && [[ ! "$(basename "$tool_config")" =~ ^_ ]]; then
+      source "$tool_config"
+    fi
+  done
+fi
 
 bindkey -v
 export KEYTIMEOUT=1
@@ -62,7 +92,7 @@ preexec() { echo -ne '\e[5 q' ;}
 #bindkey '^e' edit-command-line
 #
 #source /usr/local/opt/zsh-fast-syntax-highlighting/share/zsh-fast-syntax-highlighting/fast-syntax-highlighting.plugin.zsh
-[ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
+
 
 #alias rm="trash"
 #

@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/dotfiles"
+stamp_file="$state_dir/apt-update"
+max_age_seconds="${DOTFILES_APT_UPDATE_MAX_AGE_SECONDS:-86400}"
+
+mkdir -p "$state_dir"
+
+now=$(date +%s)
+
+if [[ -f "$stamp_file" ]]; then
+  last_update=$(stat -c %Y "$stamp_file")
+
+  if (( now - last_update < max_age_seconds )); then
+    echo "apt-update: package lists are recent"
+    exit 0
+  fi
+fi
+
+echo "apt-update: refreshing package lists"
+sudo apt-get update
+touch "$stamp_file"
