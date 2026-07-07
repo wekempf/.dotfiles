@@ -1,0 +1,5 @@
+version: 1
+
+stow:
+  target: "~"
+  directory: "."

@@ -1,0 +1,14 @@
+version: 1
+
+package:
+  name: ripgrep
+  description: "ripgrep configuration"
+
+requires:
+  tools:
+    required:
+      - tool: ripgrep
+
+stow:
+  enabled: true
+  target: "~"

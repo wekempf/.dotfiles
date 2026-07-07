@@ -1,0 +1,14 @@
+version: 1
+
+package:
+  name: bat
+  description: "bat pager configuration"
+
+requires:
+  tools:
+    required:
+      - tool: bat
+
+stow:
+  enabled: true
+  target: "~"

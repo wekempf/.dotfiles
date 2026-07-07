@@ -3,3 +3,5 @@
 ^/setup$
 ^/setup-tools$
 ^/\.config/zsh/tools\.yaml$
+^/\.qenv$
+^/\.qenv/.*$

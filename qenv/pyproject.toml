@@ -1,0 +1,11 @@
+[project]
+name = "qenv"
+version = "0.1.0"
+description = "qenv manages this dotfiles repository."
+requires-python = ">=3.10"
+dependencies = [
+  "PyYAML>=6.0",
+]
+
+[tool.uv]
+package = false

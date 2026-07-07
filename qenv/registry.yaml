@@ -1,0 +1,63 @@
+version: 1
+
+tools:
+  zsh:
+    commands:
+      - zsh
+    providers:
+      apt:
+        package: zsh
+      dnf:
+        package: zsh
+      pacman:
+        package: zsh
+      brew:
+        package: zsh
+
+  starship:
+    commands:
+      - starship
+    providers:
+      brew:
+        package: starship
+      mise:
+        package: starship
+
+  ripgrep:
+    commands:
+      - rg
+    providers:
+      apt:
+        package: ripgrep
+      dnf:
+        package: ripgrep
+      pacman:
+        package: ripgrep
+      brew:
+        package: ripgrep
+
+  bat:
+    commands:
+      - bat
+    providers:
+      apt:
+        package: bat
+      dnf:
+        package: bat
+      pacman:
+        package: bat
+      brew:
+        package: bat
+
+  git:
+    commands:
+      - git
+    providers:
+      apt:
+        package: git
+      dnf:
+        package: git
+      pacman:
+        package: git
+      brew:
+        package: git

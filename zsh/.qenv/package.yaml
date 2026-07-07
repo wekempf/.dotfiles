@@ -1,0 +1,14 @@
+version: 1
+
+package:
+  name: zsh
+  description: "Zsh shell configuration"
+
+requires:
+  tools:
+    required:
+      - tool: zsh
+
+stow:
+  enabled: true
+  target: "~"

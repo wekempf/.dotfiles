@@ -1,0 +1,14 @@
+version: 1
+
+install:
+  global:
+    enabled: true
+    allow_sudo: true
+
+providers:
+  order:
+    - apt
+    - dnf
+    - pacman
+    - brew
+    - mise

@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_PATH="$(readlink -f -- "${BASH_SOURCE[0]}")"
+SCRIPT_DIR="$(cd -- "$(dirname -- "$SCRIPT_PATH")" && pwd -P)"
+VENV_PYTHON="$SCRIPT_DIR/.venv/bin/python"
+
+if [[ -n "${DOTFILES:-}" ]]; then
+  if [[ ! -d "$DOTFILES" ]]; then
+    echo "qenv: DOTFILES does not point to a directory: $DOTFILES" >&2
+    exit 1
+  fi
+
+  DOTFILES_ROOT="$(cd -- "$DOTFILES" && pwd -P)"
+else
+  DOTFILES_ROOT="$(cd -- "$SCRIPT_DIR/.." && pwd -P)"
+fi
+
+export DOTFILES="$DOTFILES_ROOT"
+
+if [[ -x "$VENV_PYTHON" ]]; then
+  PYTHON_BIN="$VENV_PYTHON"
+elif command -v python3 >/dev/null 2>&1; then
+  PYTHON_BIN="python3"
+elif command -v python >/dev/null 2>&1 \
+  && python -c 'import sys; raise SystemExit(0 if sys.version_info.major == 3 else 1)' >/dev/null 2>&1; then
+  PYTHON_BIN="python"
+else
+  echo "qenv: no usable Python found. Run $DOTFILES_ROOT/bootstrap.sh first or create $SCRIPT_DIR/.venv with uv sync." >&2
+  exit 1
+fi
+
+exec "$PYTHON_BIN" "$SCRIPT_DIR/__main__.py" "$@"
