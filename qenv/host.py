@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import platform
 from dataclasses import dataclass
 from pathlib import Path
@@ -22,6 +23,7 @@ class HostInfo:
     architecture: str
     package_managers: tuple[str, ...]
     sudo_available: bool
+    is_root: bool
 
 
 def detect_host_info() -> HostInfo:
@@ -34,6 +36,7 @@ def detect_host_info() -> HostInfo:
         if any(which(command) for command in commands)
     )
     sudo_available = which("sudo") is not None
+    is_root = _detect_is_root()
 
     return HostInfo(
         operating_system=operating_system,
@@ -41,7 +44,16 @@ def detect_host_info() -> HostInfo:
         architecture=architecture,
         package_managers=package_managers,
         sudo_available=sudo_available,
+        is_root=is_root,
     )
+
+
+def _detect_is_root() -> bool:
+    geteuid = getattr(os, "geteuid", None)
+    if geteuid is None:
+        return False
+
+    return geteuid() == 0
 
 
 def _detect_operating_system() -> str:

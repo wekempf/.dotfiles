@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-from shutil import which
 from typing import Any
 
 from dotfiles import find_dotfiles_root
 from host import HostInfo
+from providers import get_provider
 from yamlutil import load_yaml_mapping
 
 
@@ -55,14 +55,10 @@ def get_tool(name: str, dotfiles_root: Path | None = None) -> ToolDefinition:
 
 
 def get_providers_for_tool(tool: ToolDefinition, host: HostInfo) -> tuple[ProviderDefinition, ...]:
-    available_providers = set(host.package_managers)
-    if which("mise") is not None:
-        available_providers.add("mise")
-
     return tuple(
         provider
         for provider_name, provider in tool.providers.items()
-        if provider_name in available_providers
+        if get_provider(provider_name).is_available(host)
     )
 
 

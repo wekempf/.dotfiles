@@ -17,3 +17,9 @@ __add_path() {
     path=("${additions[@]}" "${path[@]}")
     export PATH
 }
+# Shell functions
+
+# mcd: make directory and cd into it
+mcd() {
+  mkdir -p "$1" && cd "$1"
+}

@@ -61,3 +61,16 @@ tools:
         package: git
       brew:
         package: git
+
+  stow:
+    commands:
+      - stow
+    providers:
+      apt:
+        package: stow
+      dnf:
+        package: stow
+      pacman:
+        package: stow
+      brew:
+        package: stow

@@ -577,123 +577,123 @@ Use this numbered checklist to implement the MVP step by step across multiple se
 
 ### Phase 5: Tool Detection & Resolution
 
-- [ ] 18. Create `qenv/resolver.py`
-  - [ ] 18.1. Implement `is_command_available(command)` using `shutil.which()`
-  - [ ] 18.2. Implement `is_tool_installed(tool)` checking all commands
-  - [ ] 18.3. Implement `resolve_provider(tool, host, policy, registry)`
-  - [ ] 18.4. Implement `create_install_plan(package_metadata, host, policy, registry)`
-  - [ ] 18.5. Create `InstallPlan` dataclass with tools to install
+- [x] 18. Create `qenv/resolver.py`
+  - [x] 18.1. Implement `is_command_available(command)` using `shutil.which()`
+  - [x] 18.2. Implement `is_tool_installed(tool)` checking all commands
+  - [x] 18.3. Implement `resolve_provider(tool, host, policy, registry)`
+  - [x] 18.4. Implement `create_install_plan(package_metadata, host, policy, registry)`
+  - [x] 18.5. Create `InstallPlan` dataclass with tools to install
 
-- [ ] 19. Test Phase 5
-  - [ ] 19.1. Verify command detection works
-  - [ ] 19.2. Verify provider selection based on host
-  - [ ] 19.3. Verify install plan generation
-  - [ ] 19.4. Verify error when no provider available
+- [x] 19. Test Phase 5
+  - [x] 19.1. Verify command detection works
+  - [x] 19.2. Verify provider selection based on host
+  - [x] 19.3. Verify install plan generation
+  - [x] 19.4. Verify error when no provider available
 
 ### Phase 6: Provider Implementation
 
-- [ ] 20. Create `qenv/providers/__init__.py`
-  - [ ] 20.1. Set up provider package
+- [x] 20. Create `qenv/providers/__init__.py`
+  - [x] 20.1. Set up provider package
 
-- [ ] 21. Create `qenv/providers/base.py`
-  - [ ] 21.1. Define `Provider` base class/interface
-  - [ ] 21.2. Add `is_available(host)` method
-  - [ ] 21.3. Add `install(tool, package_name, host)` method
-  - [ ] 21.4. Add `requires_sudo` property
+- [x] 21. Create `qenv/providers/base.py`
+  - [x] 21.1. Define `Provider` base class/interface
+  - [x] 21.2. Add `is_available(host)` method
+  - [x] 21.3. Add `install(tool, package_name, host)` method
+  - [x] 21.4. Add `requires_sudo` property
 
-- [ ] 22. Create `qenv/providers/apt.py`
-  - [ ] 22.1. Implement `is_available()` checking for apt-get
-  - [ ] 22.2. Implement `install()` running `sudo apt-get install -y <package>`
-  - [ ] 22.3. Set `requires_sudo = True`
-  - [ ] 22.4. Add error handling for install failures
+- [x] 22. Create `qenv/providers/apt.py`
+  - [x] 22.1. Implement `is_available()` checking for apt-get
+  - [x] 22.2. Implement `install()` running `sudo apt-get install -y <package>`
+  - [x] 22.3. Set `requires_sudo = True`
+  - [x] 22.4. Add error handling for install failures
 
-- [ ] 23. Create `qenv/providers/dnf.py`
-  - [ ] 23.1. Implement `is_available()` checking for dnf
-  - [ ] 23.2. Implement `install()` running `sudo dnf install -y <package>`
-  - [ ] 23.3. Set `requires_sudo = True`
-  - [ ] 23.4. Add error handling for install failures
+- [x] 23. Create `qenv/providers/dnf.py`
+  - [x] 23.1. Implement `is_available()` checking for dnf
+  - [x] 23.2. Implement `install()` running `sudo dnf install -y <package>`
+  - [x] 23.3. Set `requires_sudo = True`
+  - [x] 23.4. Add error handling for install failures
 
-- [ ] 24. Create `qenv/providers/pacman.py`
-  - [ ] 24.1. Implement `is_available()` checking for pacman
-  - [ ] 24.2. Implement `install()` running `sudo pacman -S --noconfirm <package>`
-  - [ ] 24.3. Set `requires_sudo = True`
-  - [ ] 24.4. Add error handling for install failures
+- [x] 24. Create `qenv/providers/pacman.py`
+  - [x] 24.1. Implement `is_available()` checking for pacman
+  - [x] 24.2. Implement `install()` running `sudo pacman -S --noconfirm <package>`
+  - [x] 24.3. Set `requires_sudo = True`
+  - [x] 24.4. Add error handling for install failures
 
-- [ ] 25. Create `qenv/providers/brew.py`
-  - [ ] 25.1. Implement `is_available()` checking for brew
-  - [ ] 25.2. Implement `install()` running `brew install <package>`
-  - [ ] 25.3. Set `requires_sudo = False`
-  - [ ] 25.4. Add error handling for install failures
+- [x] 25. Create `qenv/providers/brew.py`
+  - [x] 25.1. Implement `is_available()` checking for brew
+  - [x] 25.2. Implement `install()` running `brew install <package>`
+  - [x] 25.3. Set `requires_sudo = False`
+  - [x] 25.4. Add error handling for install failures
 
-- [ ] 26. Create `qenv/providers/mise.py`
-  - [ ] 26.1. Implement `is_available()` checking for mise
-  - [ ] 26.2. Implement `install()` running `mise install <package>`
-  - [ ] 26.3. Set `requires_sudo = False`
-  - [ ] 26.4. Add error handling for install failures
+- [x] 26. Create `qenv/providers/mise.py`
+  - [x] 26.1. Implement `is_available()` checking for mise
+  - [x] 26.2. Implement `install()` running `mise install <package>`
+  - [x] 26.3. Set `requires_sudo = False`
+  - [x] 26.4. Add error handling for install failures
 
-- [ ] 27. Create provider factory in `qenv/providers/__init__.py`
-  - [ ] 27.1. Implement `get_provider(provider_name)` factory function
-  - [ ] 27.2. Register all provider classes
-  - [ ] 27.3. Add error handling for unknown providers
+- [x] 27. Create provider factory in `qenv/providers/__init__.py`
+  - [x] 27.1. Implement `get_provider(provider_name)` factory function
+  - [x] 27.2. Auto-discover provider classes from `qenv/providers/*.py`
+  - [x] 27.3. Add error handling for unknown providers
 
-- [ ] 28. Test Phase 6
-  - [ ] 28.1. Test each provider's `is_available()` method
-  - [ ] 28.2. Test installing a package with available provider
-  - [ ] 28.3. Verify sudo is used when required
-  - [ ] 28.4. Verify error handling on install failure
+- [x] 28. Test Phase 6
+  - [x] 28.1. Test each provider's `is_available()` method
+  - [x] 28.2. Test installing a package with available provider
+  - [x] 28.3. Verify sudo is used when required
+  - [x] 28.4. Verify error handling on install failure
 
 ### Phase 7: Executor & Apply Command
 
-- [ ] 29. Create `qenv/executor.py`
-  - [ ] 29.1. Implement `execute_install_plan(plan, providers)`
-  - [ ] 29.2. Add progress output for each tool installation
-  - [ ] 29.3. Implement `stow_package(package_name, config)`
-  - [ ] 29.4. Add error handling with clear messages
-  - [ ] 29.5. Add dry-run support (optional but recommended)
+- [x] 29. Create `qenv/executor.py`
+  - [x] 29.1. Implement `execute_install_plan(plan, providers)`
+  - [x] 29.2. Add progress output for each tool installation
+  - [x] 29.3. Implement `stow_package(package_name, config)`
+  - [x] 29.4. Add error handling with clear messages
+  - [x] 29.5. Add dry-run support (optional but recommended)
 
-- [ ] 30. Implement `apply` subcommand in `__main__.py`
-  - [ ] 30.1. Parse package name argument
-  - [ ] 30.2. Load package metadata
-  - [ ] 30.3. Detect host capabilities
-  - [ ] 30.4. Load policy and registry
-  - [ ] 30.5. Create install plan
-  - [ ] 30.6. Execute install plan
-  - [ ] 30.7. Stow package
-  - [ ] 30.8. Print success message
+- [x] 30. Implement `apply` subcommand in `__main__.py`
+  - [x] 30.1. Parse package name argument
+  - [x] 30.2. Load package metadata
+  - [x] 30.3. Detect host capabilities
+  - [x] 30.4. Load policy and registry
+  - [x] 30.5. Create install plan
+  - [x] 30.6. Execute install plan
+  - [x] 30.7. Stow package
+  - [x] 30.8. Print success message
 
-- [ ] 31. Test Phase 7
-  - [ ] 31.1. Test `qenv apply <package>` with missing tools
-  - [ ] 31.2. Test `qenv apply <package>` with existing tools
-  - [ ] 31.3. Test error on unknown package
-  - [ ] 31.4. Test error on missing tool in registry
-  - [ ] 31.5. Test error on no available provider
-  - [ ] 31.6. Verify stow works correctly
+- [x] 31. Test Phase 7
+  - [x] 31.1. Test `qenv apply <package>` with missing tools
+  - [x] 31.2. Test `qenv apply <package>` with existing tools
+  - [x] 31.3. Test error on unknown package
+  - [x] 31.4. Test error on missing tool in registry
+  - [x] 31.5. Test error on no available provider
+  - [x] 31.6. Verify stow works correctly
 
 ### Phase 8: Polish & Documentation
 
-- [ ] 32. Add user-friendly output
-  - [ ] 32.1. Add colored output (optional)
-  - [ ] 32.2. Add progress indicators
-  - [ ] 32.3. Improve error messages with suggestions
-  - [ ] 32.4. Add verbose mode flag
+- [x] 32. Add user-friendly output
+  - [x] 32.1. Add colored output (optional)
+  - [x] 32.2. Add progress indicators
+  - [x] 32.3. Improve error messages with suggestions
+  - [x] 32.4. Add verbose mode flag
 
-- [ ] 33. Create README for qenv
-  - [ ] 33.1. Document installation
-  - [ ] 33.2. Document usage examples
-  - [ ] 33.3. Document package.yaml format
-  - [ ] 33.4. Document adding tools to registry
+- [x] 33. Create README for qenv
+  - [x] 33.1. Document installation
+  - [x] 33.2. Document usage examples
+  - [x] 33.3. Document package.yaml format
+  - [x] 33.4. Document adding tools to registry
 
-- [ ] 34. Add error recovery
-  - [ ] 34.1. Handle partial failures gracefully
-  - [ ] 34.2. Provide rollback suggestions
-  - [ ] 34.3. Add `--force` flag for override scenarios
+- [x] 34. Add error recovery
+  - [x] 34.1. Handle partial failures gracefully
+  - [x] 34.2. Provide rollback suggestions
+  - [x] 34.3. Add `--force` flag for override scenarios
 
 - [ ] 35. Final testing
-  - [ ] 35.1. Test on Ubuntu system
+  - [x] 35.1. Test on Ubuntu system
   - [ ] 35.2. Test on Fedora system (if available)
   - [ ] 35.3. Test on macOS system (if available)
-  - [ ] 35.4. Test all error conditions
-  - [ ] 35.5. Test with various package configurations
+  - [x] 35.4. Test all error conditions
+  - [x] 35.5. Test with various package configurations
 
 ### MVP Complete! 🎉
 

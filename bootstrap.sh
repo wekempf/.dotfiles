@@ -7,6 +7,7 @@ DOTFILES="$SCRIPT_DIR"
 BIN_HOME="${XDG_BIN_HOME:-$HOME/.local/bin}"
 QENV_SOURCE="$DOTFILES/qenv/qenv"
 QENV_LINK="$BIN_HOME/qenv"
+BOOTSTRAP_PACKAGE="bootstrap-tools"
 
 find_python_command() {
   if command -v python3 >/dev/null 2>&1; then
@@ -19,10 +20,6 @@ find_python_command() {
   fi
 
   return 1
-}
-
-have_stow_command() {
-  command -v stow >/dev/null 2>&1
 }
 
 detect_package_manager() {
@@ -49,22 +46,18 @@ detect_package_manager() {
   return 1
 }
 
-package_name_for_tool() {
+package_name_for_python() {
   local manager="$1"
-  local tool="$2"
 
-  case "$manager:$tool" in
-    apt:python|dnf:python)
+  case "$manager" in
+    apt|dnf)
       echo python3
       ;;
-    pacman:python|brew:python)
+    pacman|brew)
       echo python
       ;;
-    apt:stow|dnf:stow|pacman:stow|brew:stow)
-      echo stow
-      ;;
     *)
-      echo "bootstrap: no package mapping for $tool via $manager" >&2
+      echo "bootstrap: no Python package mapping for $manager" >&2
       return 1
       ;;
   esac
@@ -121,38 +114,41 @@ install_system_packages() {
   return 1
 }
 
-ensure_bootstrap_tools() {
-  local -a missing_tools=()
-  local -a packages=()
+ensure_bootstrap_python() {
   local manager
-  local tool
   local package
 
-  if ! find_python_command; then
-    missing_tools+=(python)
-  fi
-
-  if ! have_stow_command; then
-    missing_tools+=(stow)
-  fi
-
-  if (( ${#missing_tools[@]} == 0 )); then
+  if find_python_command; then
     return 0
   fi
 
   if ! manager="$(detect_package_manager)"; then
-    echo "bootstrap: unable to install required tools automatically: ${missing_tools[*]}" >&2
-    echo "bootstrap: install ${missing_tools[*]} and rerun $0" >&2
+    echo "bootstrap: no usable Python 3 found" >&2
+    echo "bootstrap: automatic Python installation is unavailable on this system" >&2
+    echo "bootstrap: install Python 3 manually, then rerun $0" >&2
     return 1
   fi
 
-  for tool in "${missing_tools[@]}"; do
-    package="$(package_name_for_tool "$manager" "$tool")" || return 1
-    packages+=("$package")
-  done
+  package="$(package_name_for_python "$manager")" || return 1
 
-  echo "bootstrap: installing required tools: ${missing_tools[*]}"
-  install_system_packages "$manager" "${packages[@]}"
+  echo "bootstrap: installing Python 3 bootstrap prerequisite"
+  if install_system_packages "$manager" "$package"; then
+    return 0
+  fi
+
+  echo "bootstrap: no usable Python 3 found" >&2
+  echo "bootstrap: automatic Python installation was not possible on this system" >&2
+  echo "bootstrap: install Python 3 manually, then rerun $0" >&2
+  return 1
+}
+
+ensure_qenv_bootstrap_tools() {
+  echo "bootstrap: ensuring qenv bootstrap tools are installed"
+  if ! "$QENV_SOURCE" apply "$BOOTSTRAP_PACKAGE"; then
+    echo "bootstrap: qenv could not install bootstrap prerequisites" >&2
+    echo "bootstrap: ensure GNU Stow is installed or fix qenv provider resolution, then rerun $0" >&2
+    return 1
+  fi
 }
 
 bin_home_in_path() {
@@ -181,25 +177,17 @@ if [[ ! -f "$QENV_SOURCE" ]]; then
   exit 1
 fi
 
-ensure_bootstrap_tools
+ensure_bootstrap_python
 
 if ! find_python_command; then
   echo "bootstrap: python3 is still unavailable after bootstrap" >&2
   exit 1
 fi
 
-if ! have_stow_command; then
-  echo "bootstrap: stow is still unavailable after bootstrap" >&2
-  exit 1
-fi
+ensure_qenv_bootstrap_tools
 
 mkdir -p "$BIN_HOME"
 ln -sfn "$QENV_SOURCE" "$QENV_LINK"
 
 echo "bootstrap: linked $QENV_LINK -> $QENV_SOURCE"
 print_path_guidance
-
-if (( $# > 0 )); then
-  echo "bootstrap: environment bootstrapped; bootstrap does not execute qenv commands" >&2
-  echo "bootstrap: run $QENV_LINK yourself after bootstrap completes" >&2
-fi
