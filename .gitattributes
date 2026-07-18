@@ -1,0 +1,2 @@
+# Keep repository text files Unix-compatible, especially executable scripts.
+* text=auto eol=lf
