@@ -4,6 +4,8 @@
 
 This plan outlines the absolute minimum functionality needed to make qenv useful for installing packages with their tool dependencies.
 
+The current implementation reached that MVP by shelling out to GNU Stow. The next planned phase replaces that subprocess with a qenv-native POSIX link engine that applies stricter desired-state semantics.
+
 ---
 
 ## Goal
@@ -18,7 +20,7 @@ And have qenv:
 1. Read the package metadata
 2. Detect which required tools are missing
 3. Install missing tools using available package managers
-4. Stow the package into `$HOME`
+4. Reconcile the package links into `$HOME`
 
 ---
 
@@ -103,7 +105,7 @@ Prerequisite bootstrapping lives in `bootstrap.sh`, not in the launcher.
 
 **File**: `qenv/executor.py`
 - Execute install plans
-- Run stow command
+- Reconcile package links into the target directory
 
 **File**: `qenv/providers/base.py`
 - Base provider interface
@@ -302,9 +304,11 @@ stow:
 ### Step 7: Executor
 - Create `qenv/executor.py`
 - Execute install plans
-- Run `stow` command
+- Build the desired link plan for the package
+- Validate the full target state before mutating anything
+- Remove stale owned links and create missing links
 
-**Deliverable**: `qenv apply <package>` installs tools and stows package
+**Deliverable**: `qenv apply <package>` installs tools and reconciles package links
 
 ---
 
@@ -323,11 +327,21 @@ $ qenv apply zsh
 #    b. Check host OS/distro
 #    c. Find first available provider (e.g., apt)
 #    d. Run: sudo apt-get install -y zsh
-# 5. Run: stow -t ~ zsh
+# 5. Build the desired link plan from the package tree
+# 6. Validate all target paths and ownership rules
+# 7. Remove owned links that are broken or no longer desired
+# 8. Create missing file links and `.link` directory links
 
 Output: zsh installed
-        Package zsh stowed to ~
+  Package zsh reconciled to ~
 ```
+
+Link rules for the planned native linker:
+
+- Directories ending in `.link` are linked as directory symlinks and are terminal traversal nodes.
+- All other non-ignored files are linked individually.
+- Apply validates only the package being installed. qenv does not need repo-wide design-time conflict checks.
+- Apply is strict: no merge, no overwrite, no partial best-effort link behavior.
 
 ---
 
@@ -339,9 +353,9 @@ Keep it simple:
 - **Missing tool in registry**: Print error, exit 1
 - **No suitable provider**: Print error, exit 1
 - **Install command fails**: Print stderr, exit 1
-- **Stow fails**: Print stderr, exit 1
+- **Link conflict or reconcile failure**: Print the conflicting path or command error, exit 1
 
-No retries, no fallbacks, no best-effort in MVP.
+No retries, no fallbacks, no merge, no overwrite, and no best-effort link mutation in MVP.
 
 ---
 
@@ -350,10 +364,10 @@ No retries, no fallbacks, no best-effort in MVP.
 Manual test cases:
 
 1. **Fresh system** (no tools): `qenv apply zsh`
-   - Should install zsh and stow package
+  - Should install zsh and reconcile package links
 
 2. **Tool already exists**: `qenv apply git`
-   - Should skip install, just stow
+  - Should skip install, just reconcile links
 
 3. **Unknown package**: `qenv apply nonexistent`
    - Should error clearly
@@ -363,6 +377,12 @@ Manual test cases:
 
 5. **No sudo available**: On system requiring sudo
    - Should error when trying to install
+
+6. **Broken or stale owned links**: `qenv apply zsh`
+  - Should remove owned links that are broken or no longer part of the desired tree
+
+7. **Directory link conflict**: Package contains `.config/nvim.link`
+  - Should fail clearly if the target subtree is already occupied by another package or real files
 
 ---
 
@@ -412,7 +432,7 @@ Manual test cases:
 
 This plan includes **only** what's needed to:
 - Install missing tools required by a package
-- Stow that package
+- Reconcile that package into the target home directory
 
 It deliberately excludes:
 - Optional dependencies (adds complexity)
@@ -433,11 +453,13 @@ These can all be added incrementally after the MVP proves useful.
 
 The MVP is successful when:
 
-1. On a fresh Ubuntu system, `qenv apply zsh` installs zsh and stows the config
+1. On a fresh Ubuntu system, `qenv apply zsh` installs zsh and reconciles the config links
 2. On a macOS system with Homebrew, the same command works
 3. If a tool is already installed, it's not reinstalled
-4. Error messages clearly indicate what went wrong
-5. The code is simple enough to understand and extend
+4. Re-running apply converges the target to desired state by removing stale owned links and creating missing links
+5. Directory links via `.link` support exclusive subtree ownership with clear conflict errors
+6. Error messages clearly indicate what went wrong
+7. The code is simple enough to understand and extend
 
 ---
 
@@ -445,17 +467,18 @@ The MVP is successful when:
 
 Once the bare minimum works:
 
-1. Add `qenv plan <package>` (what-if mode)
-2. Add `qenv package init <package>` to scaffold `.qenv/package.yaml` and package-local `.stow-local-ignore` entries
-3. Add optional dependencies with `detect_only` mode
-4. Add basic validation commands (`qenv doctor`)
-5. Add tool packages (tools that have associated configs)
-6. Add simple post-install actions (e.g., set login shell)
-7. Add package sets
-8. Add policy hierarchy
-9. Add state tracking
-10. Add Git sync operations
-11. Add plugin system
+1. Replace the external Stow subprocess with a native POSIX qenv link engine
+2. Add `qenv plan <package>` (what-if mode)
+3. Add `qenv package init <package>` to scaffold `.qenv/package.yaml` and package-local `.stow-local-ignore` entries
+4. Add optional dependencies with `detect_only` mode
+5. Add basic validation commands (`qenv doctor`)
+6. Add tool packages (tools that have associated configs)
+7. Add simple post-install actions (e.g., set login shell)
+8. Add package sets
+9. Add policy hierarchy
+10. Add state tracking outside the repo using `QENV_STATE_FILE`, platform state directories, and a home-directory fallback
+11. Add Git sync operations
+12. Add plugin system
 
 Each addition should be incremental and prove its value independently.
 
@@ -701,6 +724,40 @@ Once all items are checked, you have a working MVP that can:
 - Detect your system
 - Read package requirements
 - Install missing tools
-- Stow packages
+- Reconcile packages into the target directory (currently via Stow)
 
 Track your progress by checking off items as you complete them across sessions.
+
+### Phase 9: Native Link Engine
+
+- [ ] 36. Design qenv-native link planning
+  - [ ] 36.1. Treat directories ending in `.link` as directory symlink roots
+  - [ ] 36.2. Treat `.link` directories as terminal traversal nodes
+  - [ ] 36.3. Continue honoring package-local ignore rules during the transition from Stow
+  - [ ] 36.4. Plan individual file links for all other non-ignored files
+
+- [ ] 37. Validate desired state at apply time
+  - [ ] 37.1. Validate only the package being applied; no repo-wide design-time verification required
+  - [ ] 37.2. Reject any conflicting existing file, directory, or symlink that is not already the expected target
+  - [ ] 37.3. Reject overlaps between file-link targets and directory-link subtrees
+  - [ ] 37.4. Complete full validation before mutating the target tree
+
+- [ ] 38. Reconcile owned links
+  - [ ] 38.1. Treat every apply as a reinstall of the package's desired state
+  - [ ] 38.2. Discover links owned by the package by proving they point into that package's source tree
+  - [ ] 38.3. Remove owned links that are broken or no longer desired
+  - [ ] 38.4. Create missing links and parent directories
+  - [ ] 38.5. Apply removals before creates so source-tree deletions and renames converge cleanly
+
+- [ ] 39. Replace the external Stow dependency
+  - [ ] 39.1. Replace the subprocess Stow call in `qenv/executor.py`
+  - [ ] 39.2. Remove the Stow bootstrap prerequisite once the native linker is in place
+  - [ ] 39.3. Update bootstrap and README messaging to describe native link reconciliation
+  - [ ] 39.4. Decide later whether `stow` metadata names should be renamed to a qenv-native term
+
+- [ ] 40. Test strict desired-state linking
+  - [ ] 40.1. Verify idempotent reapply with no changes
+  - [ ] 40.2. Verify broken owned links are removed on reapply
+  - [ ] 40.3. Verify valid-but-stale owned links are removed when the desired tree changes
+  - [ ] 40.4. Verify `.link` directory conflicts fail cleanly with no mutation
+  - [ ] 40.5. Verify package apply never merges or overwrites foreign content

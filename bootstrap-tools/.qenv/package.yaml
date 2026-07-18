@@ -1,0 +1,13 @@
+version: 1
+
+package:
+  name: bootstrap-tools
+  description: "Bootstrap prerequisites managed by qenv"
+
+requires:
+  tools:
+    required: []
+
+stow:
+  enabled: false
+  target: "~"

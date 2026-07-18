@@ -1,5 +1,21 @@
 autoload -U colors && colors
 
+if zmodload zsh/datetime 2>/dev/null; then
+  typeset -gF __zsh_startup_begin=$EPOCHREALTIME
+
+  autoload -Uz add-zsh-hook
+  __zsh_report_startup_time() {
+    emulate -L zsh
+    add-zsh-hook -d precmd __zsh_report_startup_time 2>/dev/null
+
+    local -F elapsed
+    elapsed=$(( EPOCHREALTIME - __zsh_startup_begin ))
+    printf 'zsh startup: %.3fs\n' "$elapsed"
+  }
+  add-zsh-hook -d precmd __zsh_report_startup_time 2>/dev/null
+  add-zsh-hook precmd __zsh_report_startup_time
+fi
+
 if [[ -f "$ZDOTDIR/local_env.zsh" ]]; then
     source "$ZDOTDIR/local_env.zsh"
 fi

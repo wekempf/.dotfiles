@@ -331,6 +331,12 @@ def _parse_mapping_sequence_item(
 
 
 def _parse_scalar(raw_value: str) -> Any:
+    if raw_value == "[]":
+        return []
+
+    if raw_value == "{}":
+        return {}
+
     if raw_value in {"true", "false"}:
         return raw_value == "true"
 

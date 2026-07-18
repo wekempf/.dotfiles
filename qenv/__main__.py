@@ -51,7 +51,7 @@ def build_parser() -> argparse.ArgumentParser:
     apply_parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Preview changes without installing tools or changing stow links.",
+        help="Preview changes without installing tools or changing managed links.",
     )
     apply_parser.add_argument(
         "--force",

@@ -1270,10 +1270,22 @@ The sync plan should propose one of:
 
 Although desired state comes from the repo, qenv should track local runtime state outside the repo.
 
-Suggested location:
+The state file should not live inside the dotfiles repo, even as a gitignored file. It is host-local runtime state, not shared desired-state configuration.
+
+State path resolution order:
+
+1. `QENV_STATE_FILE`, if set
+2. On Windows, `%LOCALAPPDATA%\\qenv\\state.yaml`
+3. On POSIX hosts, `${XDG_STATE_HOME:-$HOME/.local/state}/qenv/state.yaml`
+4. Last resort fallback, `~/.qenv/state.yaml`
+
+This gives tests, containers, and unusual environments an explicit override while keeping normal installs on platform-native state directories.
+
+Example default locations:
 
 ```text
-~/.local/state/qenv/state.yaml
+Linux/macOS: ${XDG_STATE_HOME:-$HOME/.local/state}/qenv/state.yaml
+Windows: %LOCALAPPDATA%\qenv\state.yaml
 ```
 
 State may include:

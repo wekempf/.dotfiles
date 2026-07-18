@@ -146,7 +146,7 @@ ensure_qenv_bootstrap_tools() {
   echo "bootstrap: ensuring qenv bootstrap tools are installed"
   if ! "$QENV_SOURCE" apply "$BOOTSTRAP_PACKAGE"; then
     echo "bootstrap: qenv could not install bootstrap prerequisites" >&2
-    echo "bootstrap: ensure GNU Stow is installed or fix qenv provider resolution, then rerun $0" >&2
+    echo "bootstrap: fix qenv provider resolution or configuration, then rerun $0" >&2
     return 1
   fi
 }
