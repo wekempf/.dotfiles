@@ -40,3 +40,13 @@ delta:
   package: git-delta
   description: "Syntax-highlighting pager for git"
   config_file: tools/delta.zsh
+
+direnv:
+  package: direnv
+  description: "Per-directory environment variable loader"
+  config_file: tools/direnv.zsh
+
+herdr:
+  package: herdr
+  description: "Session-aware wrapper support for herdr"
+  config_file: tools/herdr.zsh

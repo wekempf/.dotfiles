@@ -3,5 +3,7 @@
 ^/setup$
 ^/setup-tools$
 ^/\.config/zsh/tools\.yaml$
+^/\.config/zsh/\.zcompdump$
+^/\.config/zsh/\.zcompdump.*$
 ^/\.qenv$
 ^/\.qenv/.*$

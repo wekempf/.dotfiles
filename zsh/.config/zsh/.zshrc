@@ -78,6 +78,9 @@ fi
 bindkey -v
 export KEYTIMEOUT=1
 
+bindkey -M viins '^[[A' history-beginning-search-backward
+bindkey -M viins '^[[B' history-beginning-search-forward
+
 bindkey -M menuselect 'h' vi-backward-char
 bindkey -M menuselect 'k' vi-up-line-or-history
 bindkey -M menuselect 'l' vi-forward-char
