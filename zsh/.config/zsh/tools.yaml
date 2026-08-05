@@ -45,8 +45,3 @@ direnv:
   package: direnv
   description: "Per-directory environment variable loader"
   config_file: tools/direnv.zsh
-
-herdr:
-  package: herdr
-  description: "Session-aware wrapper support for herdr"
-  config_file: tools/herdr.zsh
