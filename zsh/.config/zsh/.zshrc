@@ -29,11 +29,12 @@ if [[ -z "${DOTFILES:-}" ]]; then
 fi
 
 if [[ -n "${DOTFILES:-}" && -d "$DOTFILES" ]]; then
-  DOTFILES="$(cd -- "$DOTFILES" && pwd -P)"
+  # Use the builtin here because optional tools may override `cd` (zoxide does).
+  DOTFILES="$(builtin cd -- "$DOTFILES" && pwd -P)"
   export DOTFILES
 fi
 
-path=("$HOME/.local/bin" $path)
+path=("$HOME/.local/bin" "/snap/bin" $path)
 export PATH
 
 if [[ -f "$ZDOTDIR/options.zsh" ]]; then
@@ -58,6 +59,11 @@ zmodload zsh/complist
 compinit -d "${XDG_STATE_HOME:-$HOME/.local/state}/zsh/zcompdump"
 _comp_options+=(globdots)
 
+# Set the active keymap before loading integrations such as fzf. Their
+# completion bindings are installed in the current map.
+bindkey -v
+export KEYTIMEOUT=1
+
 # Load tool-specific configurations
 if [[ -d "$ZDOTDIR/tools" ]]; then
   # Load helpers first (files starting with _)
@@ -74,9 +80,6 @@ if [[ -d "$ZDOTDIR/tools" ]]; then
     fi
   done
 fi
-
-bindkey -v
-export KEYTIMEOUT=1
 
 bindkey -M viins '^[[A' history-beginning-search-backward
 bindkey -M viins '^[[B' history-beginning-search-forward
@@ -131,3 +134,5 @@ fi
 if [[ -d "$HOME/.local/bin" ]]; then
     __add_path "$HOME/.local/bin"
 fi
+
+if command -v wt >/dev/null 2>&1; then eval "$(command wt config shell init zsh)"; fi

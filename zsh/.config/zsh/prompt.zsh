@@ -20,6 +20,6 @@ dir_status() {
     echo $sstatus
 }
 zstyle ':vcs_info:*' check-for-changes true
-zstyle ':vcs_info:git*' formats "%F{blue}⎇ %b %u%c"
-zstyle ':vcs_info:git*' actionformats "%F{yellow}⎇ %b|%a %u%c"
+zstyle ':vcs_info:git*' formats "%F{blue}⎇ %b"
+zstyle ':vcs_info:git*' actionformats "%F{yellow}⎇ %b|%a"
 PROMPT='🐧 %F{cyan}%~ %f$vcs_info_msg_0_$(dir_status) %F{white}→ '
